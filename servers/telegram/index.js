@@ -1,10 +1,13 @@
 // Bibliotecas
 const express = require("express");
 const { rateLimit } = require("express-rate-limit");
+const { message } = require("telegraf/filters");
 const cors = require("cors");
 
 // Contants
 const { AUTHORIZATION } = require("../../config/constants");
+const bot = require("../../bots/telegram/index");
+const { Markup } = require("telegraf");
 
 // Inicialização de variáveis
 const app = express();
@@ -50,11 +53,68 @@ app.get(`/`, (req, res, next) => {
   });
 });
 
-app.post("/webhook", (req, res, next) => {
-  // Webhook response
-  res.status(200).send();
+// app.post("/webhook", (req, res, next) => {
+//   // Webhook response
+//   res.status(200).send();
 
-  console.log(req.body);
+//   console.log(req.body);
+// });
+
+app.use(bot.webhookCallback("/webhook"));
+
+bot.command("start", (ctx) => {
+  console.log(ctx.from);
+  bot.telegram.sendMessage(
+    ctx.chat.id,
+    "Olá! Eu atendo pelo nome de Sandy e estou aqui para te ajudar em que for possível"
+  );
+});
+
+bot.command("sandy", async (ctx) => {
+  return await ctx.reply(
+    `Como posso ajudar @${ctx.chat.username} ?`,
+    Markup.keyboard([
+      ["🕛 Hora", "⛅ Clima"],
+      ["💑 Love", "📚 Livros"],
+      ["🏠 Automação", "📋 Tarefas"],
+    ])
+      .oneTime()
+      .resize()
+  );
+});
+
+bot.hears("🕛 Hora", async (ctx) => {
+  let hour = new Date();
+  let timestring = hour.toTimeString();
+  await ctx.reply(
+    `A hora atual é ${timestring.slice(0, 8)} pelo ${timestring
+      .slice(timestring.indexOf("(") + 1, -1)
+      .toLocaleLowerCase()}`
+  );
+});
+
+bot.hears("⛅ Clima", async (ctx) => {
+  await ctx.reply(`Será um dia lindo`);
+});
+
+bot.hears("💑 Love", async (ctx) => {
+  await ctx.reply(`Com isso eu não posso ajudar`);
+});
+
+bot.hears("📚 Livros", async (ctx) => {
+  await ctx.reply(`Senhor dos Anéis é uma opção`);
+});
+
+bot.hears("🏠 Automação", async (ctx) => {
+  await ctx.reply(`Funcionalidade indiponível`);
+});
+
+bot.hears("📋 Tarefas", async (ctx) => {
+  await ctx.reply(`Vai fazer seu dever de casa!!`);
+});
+
+bot.on(message("sticker"), async (ctx) => {
+  await ctx.reply("👀");
 });
 
 // Authentication system

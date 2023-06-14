@@ -48,7 +48,7 @@ app.use(vhost("*", notfound));
 try {
   // HTTPS
   const HTTPSOptions = {
-    key: fs.readFileSync("./https/key.pem a"),
+    key: fs.readFileSync("./https/key.pem"),
     cert: fs.readFileSync("./https/cert.pem"),
   };
   https.createServer(HTTPSOptions, app).listen(PORT, HOST);
