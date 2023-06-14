@@ -39,23 +39,13 @@ app.use(
 app.use(express.json());
 
 // API public routes
-app.get(`/online`, (req, res, next) => {
+app.get(`/`, (req, res, next) => {
   res.status(200).send({
     message: "Success",
-    detail: "Online",
+    detail: "Discord Server",
     content: {
       type: "String",
       value: "Online",
-    },
-  });
-});
-
-app.get("/hello", (req, res, next) => {
-  res.status(200).send({
-    message: "Success",
-    content: {
-      type: "String",
-      value: "Hello World",
     },
   });
 });
@@ -97,5 +87,5 @@ app.use((err, req, res, next) => {
 });
 
 module.exports = {
-  helloworld: app,
+  discord: app,
 };

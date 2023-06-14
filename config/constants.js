@@ -1,5 +1,5 @@
 const HOST = "localhost";
-const PORT = 3000;
+const PORT = 8443;
 
 // API KEY
 const AUTHORIZATION = process.env.AUTHORIZATION;

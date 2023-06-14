@@ -14,94 +14,49 @@ const fs = require("fs");
 
 // Contants
 const { AUTHORIZATION, HOST, PORT } = require("./config/constants");
-const { helloworld } = require("./servers/telegram/helloworld");
 
-// Inicialização de variáveis
+// Servers
+const { telegram } = require("./servers/telegram/index");
+const { instagram } = require("./servers/instagram/index");
+const { discord } = require("./servers/discord/index");
+const { whatsapp } = require("./servers/whatsapp/index");
+const { redirectServer, redirect } = require("./servers/redirect");
+const { notfound } = require("./servers/notfound");
+
+// Inicialização
 const app = express();
 
-// Limit the number of requisitions of a IP
-app.use(
-  rateLimit({
-    windowMs: 1 * 60 * 1000, // 1 minute
-    max: 20,
-    legacyHeaders: false,
-    message: {
-      message: "Error",
-      detail: "Rate limit exceeded",
-    },
-    statusCode: 429,
-  })
-);
+// Bots Servers
+app.use(vhost("telegram.bot.localhost", telegram));
+app.use(vhost("instagram.bot.localhost", instagram));
+app.use(vhost("whatsapp.bot.localhost", whatsapp));
+app.use(vhost("discord.bot.localhost", discord));
 
-app.use(
-  express.urlencoded({
-    extended: true,
-  })
-);
-
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST", "DELETE", "UPDATE", "PUT", "PATCH"],
-  })
-);
-
-app.use(express.json());
-// API Online ?
-app.get(`/`, (req, res, next) => {
+app.get("/", (req, res) => {
   res.status(200).send({
-    message: "Success",
-    detail: "Online",
-    content: {
-      type: "String",
-      value: "Hello",
-    },
+    message: "Sucess",
+    detail: "Main Server online",
   });
 });
 
-// 'Public' Bots
-app.use(vhost("telegram.bot.localhost", helloworld));
-app.use(vhost("instagram.bot.localhost", helloworld));
-app.use(vhost("whatsapp.bot.localhost", helloworld));
-
-// Authentication system
-app.use((req, res, next) => {
-  if (req.get("Authorization") == AUTHORIZATION) {
-    next();
-  } else {
-    res.status(403).send({
-      message: "Error",
-      details: "Access denied",
-      extra: "Authentication required",
-    });
-  }
-});
-
-// Protected Bots
-// app.use(vhost("telegram.bot.localhost", helloworld));
-// app.use(vhost("instagram.bot.localhost", helloworld));
-// app.use(vhost("whatsapp.bot.localhost", helloworld));
+app.use(redirect);
 
 // 404
-app.use((req, res, next) => {
-  res.status(404).send({
-    message: "Error",
-    detail: "Page not Found",
-    extra: {
-      url: req.url,
-      method: req.method,
-    },
-  });
-});
+app.use(notfound);
+app.use(vhost("*", notfound));
 
 try {
   // HTTPS
   const HTTPSOptions = {
-    key: fs.readFileSync("./https/key.pem"),
+    key: fs.readFileSync("./https/key.pem a"),
     cert: fs.readFileSync("./https/cert.pem"),
   };
   https.createServer(HTTPSOptions, app).listen(PORT, HOST);
   console.log(`https server running on ${HOST}:${PORT}`);
+
+  redirectServer.listen(80, () => {
+    console.log("http -> https server running on port 80");
+  });
 } catch (e) {
   // HTTP
   app.listen(PORT, HOST, () => {

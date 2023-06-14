@@ -42,12 +42,19 @@ app.use(express.json());
 app.get(`/`, (req, res, next) => {
   res.status(200).send({
     message: "Success",
-    detail: "Instagram Server",
+    detail: "Telegram Server",
     content: {
       type: "String",
       value: "Online",
     },
   });
+});
+
+app.post("/webhook", (req, res, next) => {
+  // Webhook response
+  res.status(200).send();
+
+  console.log(req.body);
 });
 
 // Authentication system
@@ -87,5 +94,5 @@ app.use((err, req, res, next) => {
 });
 
 module.exports = {
-  instagram: app,
+  telegram: app,
 };
