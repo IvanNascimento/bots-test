@@ -64,7 +64,7 @@ bot.telegram.setMyCommands([
   },
   {
     command: "dolar",
-    description: "Valor do Dolar Americano atualmente",
+    description: "Valor do Dólar Americano atualmente",
   },
 ]);
 
@@ -131,17 +131,13 @@ bot.on(message("sticker"), async (ctx) => {
 });
 
 bot.command("dolar", async (ctx) => {
-  let valor = await fetch(`https://economia.awesomeapi.com.br/last/USD-BRL`);
-  valor = await valor.json();
+  let valores = await fetch(`https://economia.awesomeapi.com.br/last/USD-BRL`);
+  valores = await valores.json();
+  let dolar = valores["USDBRL"]["bid"];
+  dolar.replace(".", ",");
+  let final = dolar.slice(0, 4);
 
-  console.log(valor);
-
-  await ctx.reply(
-    `Um Dolar Amaricano Atualmente vale R$ ${valor["USDBRL"]["bid"].slice(
-      0,
-      4
-    )}`
-  );
+  await ctx.reply(`Um Dólar Americano Atualmente vale R$ ${final}`);
 });
 
 // Authentication system
