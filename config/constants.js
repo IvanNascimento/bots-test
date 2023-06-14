@@ -7,6 +7,7 @@ const AUTHORIZATION = process.env.AUTHORIZATION;
 // Telegram
 const TELEGRAMTOKEN = process.env.TELEGRAMBOTTOKEN;
 const TELEGRAMCHAT = process.env.TELEGRAMCHATID;
+const TELEGRAMWEBHOOK = process.env.TELEGRAMWEB;
 
 // Instagram
 
@@ -19,6 +20,7 @@ module.exports = {
   TELEGRAM: {
     CHAT: TELEGRAMCHAT,
     TOKEN: TELEGRAMTOKEN,
+    WEBHOOK: TELEGRAMWEBHOOK,
   },
   INSTAGRAM: {
     TOKEN: "",

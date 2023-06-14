@@ -1,13 +1,13 @@
 // Bibliotecas
 const express = require("express");
-const { rateLimit } = require("express-rate-limit");
-const { message } = require("telegraf/filters");
 const cors = require("cors");
+const { rateLimit } = require("express-rate-limit");
+const { Markup } = require("telegraf");
+const { message } = require("telegraf/filters");
 
 // Contants
-const { AUTHORIZATION } = require("../../config/constants");
+const { AUTHORIZATION, TELEGRAM } = require("../../config/constants");
 const bot = require("../../bots/telegram/index");
-const { Markup } = require("telegraf");
 
 // Inicialização de variáveis
 const app = express();
@@ -53,20 +53,33 @@ app.get(`/`, (req, res, next) => {
   });
 });
 
-// app.post("/webhook", (req, res, next) => {
-//   // Webhook response
-//   res.status(200).send();
-
-//   console.log(req.body);
-// });
+bot.telegram.setWebhook(`${TELEGRAM.WEBHOOK}/webhook`);
 
 app.use(bot.webhookCallback("/webhook"));
 
+bot.telegram.setMyCommands([
+  {
+    command: "sandy",
+    description: "Initial Functions",
+  },
+  {
+    command: "dolar",
+    description: "Valor do Dolar Americano atualmente",
+  },
+]);
+
+bot.telegram.setChatMenuButton({
+  menuButton: {
+    type: "commands",
+  },
+});
+
 bot.command("start", (ctx) => {
   console.log(ctx.from);
+
   bot.telegram.sendMessage(
     ctx.chat.id,
-    "Olá! Eu atendo pelo nome de Sandy e estou aqui para te ajudar em que for possível"
+    "Olá! Eu atendo pelo nome de Sandy e estou aqui para te ajudar no que for possível"
   );
 });
 
@@ -115,6 +128,20 @@ bot.hears("📋 Tarefas", async (ctx) => {
 
 bot.on(message("sticker"), async (ctx) => {
   await ctx.reply("👀");
+});
+
+bot.command("dolar", async (ctx) => {
+  let valor = await fetch(`https://economia.awesomeapi.com.br/last/USD-BRL`);
+  valor = await valor.json();
+
+  console.log(valor);
+
+  await ctx.reply(
+    `Um Dolar Amaricano Atualmente vale R$ ${valor["USDBRL"]["bid"].slice(
+      0,
+      4
+    )}`
+  );
 });
 
 // Authentication system
