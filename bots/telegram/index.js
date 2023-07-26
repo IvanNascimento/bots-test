@@ -1,9 +1,20 @@
 const { Telegraf } = require("telegraf");
 
 const { TELEGRAM } = require("../../config/constants");
+const { sleep } = require("../../modules/common");
+
+const { Markup, Scenes, Composer } = require("telegraf");
+const { message } = require("telegraf/filters");
 
 // telegram delay 1 mensagem por segundo, 20 por minuto
 const bot = new Telegraf(TELEGRAM.TOKEN);
+
+let livros = ["Harry Potter", "Senhor dos Aneis", "Narnia", "O Hobbit", "1964"];
+
+const tarefas = {
+  pendentes: [],
+  completas: [],
+};
 
 bot.telegram.setWebhook(`${TELEGRAM.WEBHOOK}/webhook`);
 
@@ -31,6 +42,20 @@ bot.command("start", (ctx) => {
     ctx.chat.id,
     "Olá! Eu atendo pelo nome de Sandy e estou aqui para te ajudar no que for possível"
   );
+});
+
+bot.on(message("sticker"), async (ctx) => {
+  await ctx.reply("👀");
+});
+
+bot.command("dolar", async (ctx) => {
+  let valores = await fetch(`https://economia.awesomeapi.com.br/last/USD-BRL`);
+  valores = await valores.json();
+  let dolar = valores["USDBRL"]["bid"];
+  dolar.replace(".", ",");
+  let final = dolar.slice(0, 4);
+
+  await ctx.reply(`Um Dólar Americano Atualmente vale R$ ${final}`);
 });
 
 bot.command("sandy", async (ctx) => {
@@ -65,7 +90,9 @@ bot.hears("💑 Love", async (ctx) => {
 });
 
 bot.hears("📚 Livros", async (ctx) => {
-  await ctx.reply(`Senhor dos Anéis é uma opção`);
+  await ctx.reply(
+    `${livros[Math.floor(Math.random() * livros.length)]} é uma opção`
+  );
 });
 
 bot.hears("🏠 Automação", async (ctx) => {
@@ -73,21 +100,51 @@ bot.hears("🏠 Automação", async (ctx) => {
 });
 
 bot.hears("📋 Tarefas", async (ctx) => {
-  await ctx.reply(`Vai fazer seu dever de casa!!`);
+  await ctx.reply(
+    `/Adicionar_Tarefa \n/Concluir_Tarefa \n/Tarefas_pendentes \n/Tarefas_Completas`
+  );
 });
 
-bot.on(message("sticker"), async (ctx) => {
-  await ctx.reply("👀");
-});
-
-bot.command("dolar", async (ctx) => {
-  let valores = await fetch(`https://economia.awesomeapi.com.br/last/USD-BRL`);
-  valores = await valores.json();
-  let dolar = valores["USDBRL"]["bid"];
-  dolar.replace(".", ",");
-  let final = dolar.slice(0, 4);
-
-  await ctx.reply(`Um Dólar Americano Atualmente vale R$ ${final}`);
-});
+bot.use(
+  new Scenes.Stage(
+    new Scenes.WizardScene("wizard"),
+    async (ctx) => {
+      await ctx.reply("Qual a tarefa ?");
+      return ctx.wizard.next();
+    },
+    new Composer().command("Adicionar_Tarefa", async (ctx) => {
+      await ctx.reply("");
+      return ctx.wizard.next();
+    })
+  )
+);
 
 module.exports = bot;
+
+// bot.command("Adicionar_Tarefa", async (ctx) => {
+//   await ctx.reply(`Qual a tarefa ?`);
+// });
+
+// bot.command("Concluir_Tarefa", async (ctx) => {
+//   await ctx.reply(`Qual a terefa concluida ? ex.: 1`);
+//   let c = tarefas.pendentes.splice(parseInt(ctx.message?.text) - 1, 1);
+//   tarefas.completas.push(c);
+//   await ctx.reply(`Tarefa "${c} concluida com sucesso!"`);
+// });
+
+// bot.command("Tarefas_pendentes", async (ctx) => {
+//   let resposta = tarefas.pendentes.map((tarefa, index) => {
+//     return `${index + 1}° ${tarefa}\n`;
+//   });
+//   await ctx.reply(resposta.toString() || "Nenhuma Tarefa Pendente");
+// });
+
+// bot.command("Tarefas_Completas", async (ctx) => {
+//   let resposta = tarefas.completas.map((tarefa, index) => {
+//     return `${index + 1}° ${tarefa}\n`;
+//   });
+
+//   console.log(resposta);
+
+//   await ctx.reply(resposta.toString() || "Nenhuma Tarefa Completa");
+// });

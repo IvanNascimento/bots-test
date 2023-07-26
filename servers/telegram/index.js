@@ -2,8 +2,6 @@
 const express = require("express");
 const cors = require("cors");
 const { rateLimit } = require("express-rate-limit");
-const { Markup } = require("telegraf");
-const { message } = require("telegraf/filters");
 
 // Contants
 const { AUTHORIZATION, TELEGRAM } = require("../../config/constants");
